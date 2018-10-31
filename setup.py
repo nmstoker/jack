@@ -16,16 +16,6 @@ def spacy_download_en():
         subprocess.call(args, shell=True)
 
 
-def install_torch():
-    import subprocess
-    import sys
-    if sys.version_info < (3, 6):
-        args = ['pip3 install http://download.pytorch.org/whl/cu75/torch-0.2.0.post3-cp35-cp35m-manylinux1_x86_64.whl']
-    else:
-        args = ['pip3 install http://download.pytorch.org/whl/cu80/torch-0.2.0.post3-cp36-cp36m-manylinux1_x86_64.whl']
-    subprocess.call(args, shell=True)
-
-
 class Install(_install):
     def run(self):
         _install.do_egg_install(self)
@@ -43,13 +33,19 @@ with open('requirements.txt', 'r') as f:
     install_requires = [l for l in f.readlines() if not l.startswith('http://')]
 
 extras_require = {
-    'tf': ['tensorflow==1.4.0'],
-    'tf_gpu': ['tensorflow-gpu==1.4.0']
+    'tf': ['tensorflow==1.8.0'],
+    'tf_gpu': ['tensorflow-gpu==1.8.0'],
+    'torch': ['torch']
 }
 
-setup(name='jack',
-      version='0.1.0',
+with open("README.md", "r+", encoding="utf-8") as f:
+    long_description = f.read()
+
+setup(name='uclmr-jack',
+      version='0.2.1',
       description='Jack the Reader is a Python framework for Machine Reading',
+      long_description=long_description,
+      long_description_content_type="text/markdown",
       author='UCL Machine Reading',
       author_email='s.riedel@cs.ucl.ac.uk',
       url='https://github.com/uclmr/jack',
@@ -73,7 +69,8 @@ setup(name='jack',
           'Programming Language :: Python :: 3',
           'Programming Language :: Python :: 3.6',
           'Topic :: Software Development :: Libraries',
-          'Topic :: Software Development :: Libraries :: Python Modules'
+          'Topic :: Software Development :: Libraries :: Python Modules',
           'Topic :: Scientific/Engineering :: Artificial Intelligence',
+          'Operating System :: OS Independent'
       ],
       keywords='tensorflow machine learning natural language processing question answering')

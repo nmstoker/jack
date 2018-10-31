@@ -88,7 +88,7 @@ class TFModelModule(ModelModule):
         """
         raise NotImplementedError
 
-    def setup(self, is_training=True):
+    def setup(self, is_training=True, reuse=False):
         """Sets up the module.
 
         This usually involves creating the actual tensorflow graph. It is expected to be called after the input module
@@ -98,7 +98,7 @@ class TFModelModule(ModelModule):
         old_variables = tf.global_variables()
 
         with tf.variable_scope(self.shared_resources.config.get("name", "jtreader"),
-                               initializer=tf.contrib.layers.xavier_initializer()):
+                               initializer=tf.contrib.layers.xavier_initializer(), reuse=reuse):
             self._tensors = {p: p.create_tf_placeholder() for p in self.input_ports}
             output_tensors = self.create_output(
                 self.shared_resources, {port: self._tensors[port] for port in self.input_ports})
@@ -222,7 +222,9 @@ class TFReader(JTReader):
         self._train_loop(min_op, loss, batches, hooks, max_epochs, summaries, summary_writer, **kwargs)
 
     def _setup_training(self, batch_size, clip, optimizer, training_set, summary_writer, l2, clip_op, **kwargs):
-        global_step = tf.train.create_global_step()
+        global_step = tf.train.get_global_step()
+        if global_step is None:
+            global_step = tf.train.create_global_step()
         if not self._is_setup:
             # First setup shared resources, e.g., vocabulary. This depends on the input module.
             logger.info("Setting up model...")

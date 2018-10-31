@@ -1,16 +1,14 @@
 jsonschema
-matplotlib
 numpy
 parse
-pycorenlp
 scipy
 sklearn
 typing
-sacred
+sacred==0.7.2
 sqlalchemy
 pyyaml
 progressbar2
-spacy
+spacy==1.9
 diskcache
 pytest
 pytest-runner
@@ -19,3 +17,5 @@ pytest-pep8
 pytest-xdist
 pytest-cov
 codecov
+diskcache
+progressbar

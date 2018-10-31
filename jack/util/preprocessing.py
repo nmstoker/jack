@@ -13,7 +13,7 @@ from jack.util.vocab import Vocab
 
 def fill_vocab(qa_settings, vocab=None, lowercase=False, lemmatize=False, spacy_nlp=False):
     vocab = vocab or Vocab(unk=None)
-    assert not vocab.frozen, 'Filling frozen vocabs does not make a lot fo sense...'
+    assert not vocab._frozen, 'Filling frozen vocabs does not make a lot fo sense...'
     for qa_setting in qa_settings:
         nlp_preprocess(qa_setting.question, vocab, lowercase, lemmatize, use_spacy=spacy_nlp)
         for s in qa_setting.support:
@@ -45,7 +45,7 @@ def nlp_preprocess_all(qa_settings,
                        with_lemmas: bool = False,
                        with_tokens_offsets: bool = False,
                        use_spacy: bool = False):
-    assert not vocab.frozen, 'Filling frozen vocabs does not make a lot fo sense...'
+    assert not vocab._frozen, 'Filling frozen vocabs does not make a lot fo sense...'
     processed_questions = []
     processed_support = []
     for qa_setting in qa_settings:
@@ -113,12 +113,7 @@ def nlp_preprocess(text: str,
             token_offsets = token_to_char_offsets(text, tokens)
 
     length = len(tokens)
-
     ids = vocab(tokens)
-    # make sure ids are non-negative
-    if not vocab.frozen:
-        for i in range(len(ids)):
-            ids[i] = vocab.normalize(ids[i])
 
     return tokens, ids, length, lemmas, token_offsets
 
@@ -134,8 +129,8 @@ def transpose_dict_of_lists(dict_of_lists: Mapping[str, list], keys: List[str]) 
 def char_vocab_from_vocab(vocab):
     char_vocab = dict()
     char_vocab["PAD"] = 0
-    for i in range(max(vocab.id2sym.keys()) + 1):
-        w = vocab.id2sym.get(i)
+    for i in range(len(vocab)):
+        w = vocab.get_sym(i)
         if w is not None:
             for c in w:
                 if c not in char_vocab:
@@ -184,15 +179,15 @@ def unique_words_with_chars(tokens, char_vocab, char_limit=20):
     return unique_words, unique_word_lengths, token2unique, vocab, rev_vocab
 
 
-def sort_by_tfidf(question, paragraphs):
+def sort_by_tfidf(reference, candidates):
     tfidf = TfidfVectorizer(strip_accents="unicode", stop_words=spacy.en.STOP_WORDS, decode_error='replace')
     try:
-        para_features = tfidf.fit_transform(paragraphs)
-        q_features = tfidf.transform([question])
+        para_features = tfidf.fit_transform(candidates)
+        q_features = tfidf.transform([reference])
     except ValueError:
-        return [(i, 0.0) for i in range(len(paragraphs))]
+        return [(i, 0.0) for i in range(len(candidates))]
 
     dists = pairwise_distances(q_features, para_features, "cosine").ravel()
-    sorted_ix = np.lexsort((paragraphs, dists))  # in case of ties, use the earlier paragraph
+    sorted_ix = np.lexsort((candidates, dists))  # in case of ties, use the earlier paragraph
 
     return [(i, 1.0 - dists[i]) for i in sorted_ix]

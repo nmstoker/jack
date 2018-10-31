@@ -10,15 +10,42 @@
 [wercker]: https://app.wercker.com/project/byKey/8ed61192a5b16769a41dc24c30a3bc6a
 [heres_johnny]: https://upload.wikimedia.org/wikipedia/en/b/bb/The_shining_heres_johnny.jpg
 
-**Jack the Reader** - or **jack**, for short - is a framework for building and using models on a variety of tasks that require *reading comprehension*.
+**Jack the Reader** - or **jack**, for short - is a framework for building and using models on a variety of tasks that require *reading comprehension*. For more informations about the overall architecture, we refer to [Jack the Reader – A Machine Reading Framework](https://arxiv.org/abs/1806.08727) (ACL 2018).
 
 ## Installation
-To install Jack, please see [How to Install and Run][install]. 
+To install Jack, install requirements and [TensorFlow](http://tensorflow.org/). In case you want to use PyTorch for writing models, please install [PyTorch](http://pytorch.org/) as well.
 
-## Quick Start & Tutorials
-We provide ipython notebooks with tutorials on Jack. For the quickest start, you can begin [here][quickstart]. If you're interested in training a model yourself, see [this tutorial][model_training], and if you'd like to implement a new model yourself, [this notebook][implementation] gives you a tutorial that explains this process in more detail.
+## Supported ML Backends
 
-There is documentation on our [command line interface][cli] for actually **training and evaluating models**.
+We currently support [TensorFlow](http://tensorflow.org/) and [PyTorch](http://pytorch.org/).
+Readers can be implemented using both. Input and output modules (i.e., pre- and post-processing) are independent of the
+ML backend and can thus be reused for model modules that either backend.
+Though most models are implemented in TensorFlow by reusing the cumbersome pre- and post-processing it is easy to
+quickly build new readers in PyTorch as well.
+
+## Pre-trained Models
+
+Find pre-trained models [here](https://www.dropbox.com/sh/vnmc9pq4yrgl1sr/AAD7HVhGdpof2IgIifSZ6PEUa?dl=0).
+
+## Code Structure
+
+* `jack.core` - core abstractions used
+* `jack.readers` - implementations of models
+* `jack.eval` - task evaluation code
+* `jack.util` - utility code that is used throughout the framework, including shared ML code
+* `jack.io` - IO related code, including loading and dataset conversion scripts
+
+
+## Projects
+
+* [Integration of Knowledge into neural NLU systems](/projects/knowledge_integration)
+
+## Quickstart
+
+### Coding Tutorials - Notebooks & CLI
+We provide ipython notebooks with tutorials on Jack. For the quickest start, you can begin [here][quickstart]. If you're interested in training a model yourself from code, see [this tutorial][model_training] (we recommend the command-line, see below), and if you'd like to implement a new model yourself, [this notebook][implementation] gives you a tutorial that explains this process in more detail.
+
+There is documentation on our [command-line interface][cli] for actually **training and evaluating models**.
 For a high-level explanation of the ideas and vision, see [Understanding Jack the Reader][understanding].
 
 [quickstart]: notebooks/quick_start.ipynb
@@ -30,25 +57,11 @@ For a high-level explanation of the ideas and vision, see [Understanding Jack th
 [understanding]: docs/Understanding_Jack_the_Reader.md
 [cli]: docs/CLI.md
 
-## Supported ML Backends
-
-We currently support [TensorFlow](http://tensorflow.org/) and [PyTorch](http://pytorch.org/).
-Readers can be implemented using both. Input and output modules (i.e., pre- and post-processing) are independent of the 
-ML backend and can thus be reused for model modules that either backend.
-Though most models are implemented in TensorFlow by reusing the cumbersome pre- and post-processing it is easy to
-quickly build new readers in PyTorch as well. 
-
-## Dedicated Task Documentation and Pre-trained Models
- 
-* [Question Answering](/docs/tasks/Extractive_QA.md)
-* [Natural Language Inference](/docs/tasks/Natural_Language_Inference.md)
-* [Link Prediction for Automatic Knowledge Base Completion](/docs/tasks/Link_Prediction.md)
-
-## Quickstart Examples - Training and Usage of a Question Answering System
-
+### Command-line Training and Usage of a QA System
 To illustrate how jack works, we will show how to train a question answering
-model. It is probably best to setup a [virtual environment](https://docs.python.org/3/library/venv.html) to avoid
-clashes with system wide python library versions. A more comprehensive 
+model using our [command-line interface][cli] which is analoguous for other tasks (browse [conf/](./conf/) for existing task-dataset configurations).
+It is probably best to setup a [virtual environment](https://docs.python.org/3/library/venv.html) to avoid
+clashes with system wide python library versions.
 
 First, install the framework:
 
@@ -101,9 +114,9 @@ from jack.core import QASetting
 
 fastqa_reader = readers.reader_from_file("./fastqa_reader")
 
-support = """"It is a replica of the grotto at Lourdes, 
-France where the Virgin Mary reputedly appeared to Saint Bernadette Soubirous in 1858. 
-At the end of the main drive (and in a direct line that connects through 3 statues and the Gold Dome), 
+support = """"It is a replica of the grotto at Lourdes,
+France where the Virgin Mary reputedly appeared to Saint Bernadette Soubirous in 1858.
+At the end of the main drive (and in a direct line that connects through 3 statues and the Gold Dome),
 is a simple, modern stone statue of Mary."""
 
 answers = fastqa_reader([QASetting(
@@ -116,6 +129,7 @@ print(answers[0][0].text)
 [fastqa]: https://arxiv.org/abs/1703.04816
 [tf_summaries]: https://www.tensorflow.org/get_started/summaries_and_tensorboard
 [quick_start]: notebooks/quick_start.ipynb
+[cli]: docs/CLI.md
 
 ## Support
 We are thankful for support from:
@@ -141,3 +155,16 @@ $ python3 bin/jack-train.py [..]
 ```
 
 [pep8]: https://www.python.org/dev/peps/pep-0008/
+
+## Citing
+
+```
+@InProceedings{weissenborn2018jack,
+author    = {Dirk Weissenborn, Pasquale Minervini, Tim Dettmers, Isabelle Augenstein, Johannes Welbl, Tim Rocktäschel, Matko Bošnjak, Jeff Mitchell, Thomas Demeester, Pontus Stenetorp, Sebastian Riedel},
+title     = {{Jack the Reader – A Machine Reading Framework}},
+booktitle = {{Proceedings of the 56th Annual Meeting of the Association for Computational Linguistics (ACL) System Demonstrations}},
+Month     = {July},
+year      = {2018},
+url       = {https://arxiv.org/abs/1806.08727}
+}
+```

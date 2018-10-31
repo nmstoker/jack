@@ -32,23 +32,15 @@ def convert_snli(snli_file_jsonl):
 
 
 def __convert_snli_instance(instance):
-    try:
-        if not instance['gold_label'] in __candidate_labels:
-            raise IOError('invalid gold label')
-        queb = {}
+    queb = {}
+    if instance['gold_label'] in __candidate_labels:
         queb['id'] = instance['pairID']
         queb['support'] = [
             {'id': instance.get('captionID'), 'text': instance['sentence1']}]
         queb['questions'] = [
             {'question': instance['sentence2'],
-             'answers': [
-                 # {'index': __candidate_labels.index(instance['gold_label'])},
-                 {'text': __candidate_labels[__candidate_labels.index(instance['gold_label'])]}]}]
-
-        return queb
-
-    except IOError:
-        return None
+             'answers': [{'text': instance['gold_label']}]}]
+    return queb
 
 
 def main():

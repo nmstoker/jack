@@ -7,8 +7,8 @@ import numpy as np
 import tensorflow as tf
 
 from jack.readers.classification.shared import AbstractSingleSupportClassificationModel
-from jack.tfutil.attention import attention_softmax3d
-from jack.tfutil.masking import mask_3d
+from jack.util.tf.attention import attention_softmax3d
+from jack.util.tf.masking import mask_3d
 
 logger = logging.getLogger(__name__)
 
@@ -22,12 +22,11 @@ class DecomposableAttentionModel(AbstractSingleSupportClassificationModel):
 
         if has_bos_token:
             # batch_size = embedded_question.get_shape()[0]
-            emb_size = embedded_question.get_shape().as_list()[2]
+            embedding_size = embedded_question.get_shape().as_list()[2]
 
             bos_token_emb = tf.get_variable('bos_token_embedding',
-                                            shape=(1, 1, emb_size),
-                                            initializer=tf.random_uniform_initializer(),
-                                            trainable=False)
+                                            shape=(1, 1, embedding_size),
+                                            initializer=tf.ones_initializer())
 
             batch_size = tf.shape(embedded_question)[0]
 
@@ -45,13 +44,16 @@ class DecomposableAttentionModel(AbstractSingleSupportClassificationModel):
             embedded_question = tf.nn.l2_normalize(embedded_question, 2)
             embedded_support = tf.nn.l2_normalize(embedded_support, 2)
 
+        dropout_rate = shared_resources.config.get('dropout', 0)
+        dropout_keep_prob = tf.cond(tf.logical_not(tensors.is_eval), lambda: 1.0 - dropout_rate, lambda: 1.0)
+
         model_kwargs = {
             'sequence1': embedded_question,
             'sequence1_length': tensors.question_length,
             'sequence2': embedded_support,
             'sequence2_length': tensors.support_length,
             'representation_size': shared_resources.config['repr_dim'],
-            'dropout_keep_prob': 1.0 - shared_resources.config.get('dropout', 0),
+            'dropout_keep_prob': dropout_keep_prob,
             'use_masking': True,
         }
 
